@@ -1,0 +1,17 @@
+# loopback interface
+auto lo
+iface lo inet loopback
+
+# wireless wlan0
+allow-hotplug wlan0
+iface wlan0 inet manual
+
+# eth0 connected to the ISP router
+allow-hotplug eth0
+iface eth0 inet manual
+
+# Setup bridge
+allow-hotplug br0
+iface br0 inet dhcp
+    bridge_ports wlan0 eth0
+
