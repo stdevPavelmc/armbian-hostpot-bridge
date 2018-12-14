@@ -1,8 +1,8 @@
-# Armbian as a wireless router connected to your local LAN using a Orange Pri Prime SBC
+# Armbian as a wireless router connected to your local LAN using a Orange Pi Prime SBC
 
-Main goal is to create detailed instructions to make a armbian wireless router with full security that allows you to use your home lan to route traffic.
+Main goal is to create detailed instructions to make a armbian wireless router with full security that allows you to use your home lan to route traffic to the internet. All this over vanilla armbian and as easy [and explained] as possible.
 
-All this over vanilla armbian and as easy as possible.
+**Bonus:** This guide must work with any other SBC that can run armbian and can use a WiFi adapter (onboard or USB) but you has to care about possible slight changes in interface names, etc. 
 
 ## Requirements
 
@@ -15,9 +15,8 @@ You will need the following to complete this guide:
 * HDMI capable monitor
 * Power adapter for the Orange Pi Prime SBC  (5.0 V @ 2A or more)
 * A free ethernet port on your home router with internet access
-* [Optional] if your lan has no DHCP you will need to know your network data (IP, mask, gateway)
 
-Also I will assume that your local network has a DHCP server, this http server will server wifi users as well; we will bridge the LAN and WIFI networks.
+I will assume that your local network has a DHCP server, this http server will server wifi users as well; we will bridge the LAN and WIFI networks.
 
 ## Step 1: Get armbian and flash it
 
@@ -25,7 +24,7 @@ Get armbian for Orange Pi Prime SBC, you can download the image from the officia
 
 Once you have it un-compress the file and flash it to a uSD card, you can find a lot of guides about how to do it over the internet.
 
-## Step 2: Start it and create the user.
+## Step 2: Start it and create the user
 
 Insert the uSD card into the Orange Pi Prime SBC, connect the ethernet cable from your local lan, the monitor and the usb Keyboard; at the end connect the power cable.
 
@@ -108,7 +107,7 @@ systemctl disable NetworkManager-wait-online
 apt purge network-manager -y
 ```
 
-By this we are disabling & removing the services, at this point out network connecction will not work.
+With this commands we are disabling & removing the services, at this point our network connection may not work.
 
 ## Step 5: Setting up the network bridge [eth0 wlan0/wlan1]
 
@@ -196,10 +195,10 @@ nano /etc/hostapd/hostapd.conf
 
 In there you need to change just two lines, the ones to refers to:
 
-* Wireless SSID [ssid='OPP-hotspot']
-* Wireless Password [wpa_passphrase='123password']
+* Wireless SSID [ssid=OPP-hotspot]
+* Wireless Password [wpa_passphrase=123password]
 
-In this case "OOP-hotspot" is the WiFi network name and '123passwd' is the password, change at your will but take care of keep them between the single quotes to avoid interpretation of spaces or special chars
+In this case "OOP-hotspot" is the WiFi network name and "123passwd" is the password, change at your will.
 
 ### Bonus
 
