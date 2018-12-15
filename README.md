@@ -1,32 +1,36 @@
-# Armbian as a wireless router connected to your local LAN using a Orange Pi Prime SBC
+# Your SBC as a wireless router connected to your local LAN
 
-Main goal is to create detailed instructions to make a armbian wireless router with full security that allows you to use your home lan to route traffic to the internet. All this over vanilla armbian and as easy [and explained] as possible.
+Main goal is to create detailed instructions to turn any SBC that runs [Armbian](https://www.armbian.com/) or [Raspbian](https://www.raspbian.org/) into a wireless router with full security that allows you to use your home lan to route traffic to the internet. Main focus is on Armbian OS, but instructions for Raspbian are included to when needed.
 
-**Bonus:** This guide must work with any other SBC that can run armbian and can use a WiFi adapter (onboard or USB) but you has to care about possible slight changes in interface names, etc. 
+A notice: all the [Raspberry Pis](https://www.raspberrypi.org/) that use [Raspbian](https://www.raspbian.org/) and need to do some extra steps, I will point that extra steps along the way. Of curse if you has a Raspberry Pi with no WiFi you can add a USB WiFi dongle.
 
 ## Requirements
 
 You will need the following to complete this guide:
 
-* Orange Pi Prime SBC
+* Single Board Computer that supports Linux, Armbian or Raspbian [tested on Orange Pi Prime & Raspberry B+ plus USB WiFi dongle]
 * uSD card, at least 8 GB and class 10 recommended.
 * USB keyboard
 * HDMI cable
 * HDMI capable monitor
-* Power adapter for the Orange Pi Prime SBC  (5.0 V @ 2A or more)
+* Power adapter for the Orange Pi Prime SBC  (5.0 V @ 2A or more) or USB cable for Raspberry Pi
 * A free ethernet port on your home router with internet access
 
-I will assume that your local network has a DHCP server, this http server will server wifi users as well; we will bridge the LAN and WIFI networks.
+I will assume that your local network has a DHCP server, this DHCP server will serve wifi users as well as we will bridge the LAN and WIFI networks.
 
-## Step 1: Get armbian and flash it
+## Step 1: Get Armbian/Raspbian and flash it
 
-Get armbian for Orange Pi Prime SBC, you can download the image from the official site [here](https://www.armbian.com/orange-pi-prime/) pick the non desktop one as we will require not UI.
+Get armbian for your SBC from [the official site](https://www.armbian.com/) pick the non desktop one as we will require not UI.
 
-Once you have it un-compress the file and flash it to a uSD card, you can find a lot of guides about how to do it over the internet.
+If you use a Raspberry go to official site and download the Raspbian lite version.
 
-## Step 2: Start it and create the user
+Once you have the images un-compress the file and flash it to a uSD card, you can find a lot of guides about how to do it over the internet.
 
-Insert the uSD card into the Orange Pi Prime SBC, connect the ethernet cable from your local lan, the monitor and the usb Keyboard; at the end connect the power cable.
+## Step 2: Plug it and start it
+
+Insert the uSD card into the SBC, connect the ethernet cable from your local lan, the monitor and the usb Keyboard; at the end connect the power cable/USB cable as you need.
+
+### Step 2a: for Armbian, start it and create the user
 
 You will see the system boot and will be presented with a login prompt, use armbian default credentials
 
@@ -85,18 +89,49 @@ You are ready to go.
 
 **Note:** Please observe that network manager has already configured your eth0 interface, see the screen snipet above.
 
-## Step 3: Get needed files
+### Step 2b: for Raspbian, Start it and change pi password
 
-We will start tinkering with the network now, and in the process wil will lose connectivity, so we will get all the files, do this on the console.
+Log into the system, the default user is this:
 
 ```
-cd root
+user: pi
+passwd: raspbian
+```
+
+Once there change the password of uer pi, just type in the console:
+
+```
+sudo passwd pi
+Enter new UNIX password: 
+Retype new UNIX password: 
+passwd: password updated successfully
+```
+
+**Warning:** From this point forward users of Raspbian must make a `sudo bash` to switch to root and run all following commands as root.
+
+## Step 3: Get needed files
+
+We will start tinkering with the network now and in the process we may lose connectivity so we will get all the files prior to that, do this on the console:
+
+```
+cd /root
 git clone http://github.com/stdevPavelmc/armbian-hostpot-bridge.git
 ```
 
 At the end you will have a folder named armbian-hostpot-bridge in your /root folder with all the data you will need, including this instructions.
 
-## Step 4: Get rid of NetworkManager
+### Raspberry Pi install needed files
+
+For the Raspberry Pi you need to install some extra packages, run on the console
+
+```
+apt update
+apt install hostapd bridge-utils -y
+```
+
+## Step 4: Get rid of NetworkManager [Armbian only step]
+
+**This is a armbian only step, if you are using Raspbian, skip to step 5**
 
 By default al interfaces in armbian are handled by NetworkManager, but for the simple bridge to work we don't need it, so we will disable it & remove it from the system. Just type this commands on the console as root:
 
@@ -109,7 +144,7 @@ apt purge network-manager -y
 
 With this commands we are disabling & removing the services, at this point our network connection may not work.
 
-## Step 5: Setting up the network bridge [eth0 wlan0/wlan1]
+## Step 5: Setting up the network bridge [eth0 + wlan0/wlan1]
 
 Just copy the template file we have already downloaded with this command:
 
@@ -118,7 +153,7 @@ cd /root/armbian-hostpot-bridge
 cp -f interfaces /etc/network/interfaces
 ```
 
-If you use the default WiFi on the Orange Pi Prime you are set and there is no need to edit the file, but if you use a USB dongle you have to tweak it, type this on your console to see what is the name of the new USB WiFi dongle:
+If you use the default WiFi on the Orange Pi Prime (Or other with onboard WiFi) you are set and there is no need to edit the file, but if you use a USB dongle like in the case of the old Raspberry Pis you have to tweak it, type this on your console to see what is the name of the new USB WiFi dongle:
 
 ```
 ifconfig -a
@@ -161,7 +196,7 @@ wlan1: flags=56163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 ```
 
-There you can spot a `wlan0` and `wlan1` devices, the wlan0 is the onboard and the wlan1 is the USB dongle
+There you can spot a `wlan0` and `wlan1` devices (this is for a Orange Pi Prime + USB WiFi Dongle), the wlan0 is the onboard and the wlan1 is the USB dongle
 
 Now use `nano` to setup your wifi device to wlan1, in the console use:
 
@@ -176,6 +211,8 @@ Now if all gone ok you can call the bridge up and test the connection:
 ```
 ifup br0
 ```
+
+If all worked you enabled the ethernet connectivity again, try to ping a host in your net or the internet to test it.
 
 ## Step 6: Configure your hostapd service (Wifi Hotspot)
 
@@ -193,17 +230,24 @@ Now is time to edit the WiFi hotspot details, in a console run this to bring up 
 nano /etc/hostapd/hostapd.conf
 ```
 
-In there you need to change just two lines, the ones to refers to:
+In there you need to change just three lines, the ones to refers to:
 
-* Wireless SSID [ssid=OPP-hotspot]
-* Wireless Password [wpa_passphrase=123password]
+* Wireless device `interface=wlan0`
+* Wireless SSID `ssid=OPP-hotspot`
+* Wireless Password `wpa_passphrase=123password`
 
-In this case "OOP-hotspot" is the WiFi network name and "123passwd" is the password, change at your will.
+The interface option refers to the device you identified, if it's a SBC with onboard WiFi like the Orange Pi Prime you are set.
+
+The SSID is the name of the wireless network, in this case "OOP-hotspot" and "123passwd" is the password as you may guessed at this time, change at your will.
 
 ### Bonus
 
-If yo care of RF spectrum polution and good link, you can move the WiFi channel usage to a clear one by setting the [channel=6] option to the chosen one.
+If yo care of RF spectrum and good link, you can move the WiFi channel usage to a clear one by setting the [channel=6] option to the chosen one.
 
 ## You are set!
 
-Power cycle the Orange Pi Prime and enjoy your new bridged hotpot.
+Power cycle the SBC and enjoy your new bridged hotpot.
+
+## Troubles?
+
+Use the Issues tab of this repo to rise bug reports or ask questions.
