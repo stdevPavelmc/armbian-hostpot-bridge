@@ -1,36 +1,40 @@
 # Your SBC as a wireless router connected to your local LAN
 
-Main goal is to create detailed instructions to turn any SBC that runs [Armbian](https://www.armbian.com/) or [Raspbian](https://www.raspbian.org/) into a wireless router with full security that allows you to use your home lan to route traffic to the internet. Main focus is on Armbian OS, but instructions for Raspbian are included to when needed.
+Main goal is to create a guide with detailed instructions to turn any SBC that runs [Armbian](https://www.armbian.com/) or [Raspbian](https://www.raspbian.org/) into a wireless router with full security, that will allow you to use your home lan to route traffic to the internet.
 
-A notice: all the [Raspberry Pis](https://www.raspberrypi.org/) that use [Raspbian](https://www.raspbian.org/) and need to do some extra steps, I will point that extra steps along the way. Of curse if you has a Raspberry Pi with no WiFi you can add a USB WiFi dongle.
+Main focus is on Armbian, but instructions for Raspbian are included when needed.
+
+A notice: all the [Raspberry Pis](https://www.raspberrypi.org/) that use [Raspbian](https://www.raspbian.org/) need to do some extra steps, I will point that extra steps along the way; of curse if you has a Raspberry Pi with no WiFi you can always add a USB WiFi dongle.
 
 ## Requirements
 
 You will need the following to complete this guide:
 
-* Single Board Computer that supports Linux, Armbian or Raspbian [tested on Orange Pi Prime & Raspberry B+ plus USB WiFi dongle]
+* Single Board Computer that supports Linux, Armbian or Raspbian.
+  * Tested on Orange Pi Prime & Raspberry B+ plus USB WiFi dongle.
 * uSD card, at least 8 GB and class 10 recommended.
-* USB keyboard
-* HDMI cable
-* HDMI capable monitor
-* Power adapter for the Orange Pi Prime SBC  (5.0 V @ 2A or more) or USB cable for Raspberry Pi
-* A free ethernet port on your home router with internet access
+* USB keyboard.
+* HDMI cable and a monitor to connect to.
+* Power adapter for the Orange Pi Prime SBC.
+  * Adapter of 5.0 V @ 2A or more for the Orange Pi Prime.
+  * USB cable and charger of 1A or more for the Raspberry Pi.
+* A ethernet cable and a free port on your home router with internet access to connect it to.
 
-I will assume that your local network has a DHCP server, this DHCP server will serve wifi users as well as we will bridge the LAN and WIFI networks.
+I will assume that your local network has a DHCP server, this DHCP server will serve wifi users as well as we will bridge the LAN and WIFI networks (LAN & WiFi will function as a single network) 
 
 ## Step 1: Get Armbian/Raspbian and flash it
 
 Get armbian for your SBC from [the official site](https://www.armbian.com/) pick the non desktop one as we will require not UI.
 
-If you use a Raspberry go to official site and download the Raspbian lite version.
+If you use a Raspberry go to [the official site](https://www.raspberrypi.org/) and download the Raspbian lite version, aka non desktop one.
 
 Once you have the images un-compress the file and flash it to a uSD card, you can find a lot of guides about how to do it over the internet.
 
 ## Step 2: Plug it and start it
 
-Insert the uSD card into the SBC, connect the ethernet cable from your local lan, the monitor and the usb Keyboard; at the end connect the power cable/USB cable as you need.
+Insert the uSD card into the SBC, connect the ethernet cable from your local lan, the monitor and the usb Keyboard; at the end connect the power cable.
 
-### Step 2a: for Armbian, start it and create the user
+### Step 2.1: Only for Armbian, start it and create the user
 
 You will see the system boot and will be presented with a login prompt, use armbian default credentials
 
@@ -39,7 +43,7 @@ user: root
 password: 1234
 ```
 
-Once there you will be asked change the default root password, this is a screen snipet of the process:
+Once there you will be asked change the default root password, this is a sample output of the process:
 
 ```
 [  OK  ] Reached target Multi-User System.
@@ -81,29 +85,29 @@ Creating a new user account. Press <Ctrl-C> to abort
 Please provide a username (eg. your forename): 
 ```
 
-This is a prompt to create a new user, do it so if you like but please notice that you can abort it by hitting Ctrl+C and simply use root account.
+This is a prompt to create a new user, do it so if you like but please notice that you can abort it by hitting Ctrl+C and simply use root account, this is may recommended option.
 
-Either option (Ctrl+C to exit or create the user) will be kicked out and login prompt will be presented again for you to login.
+Either option (Ctrl+C to exit or create the user) you will be kicked out and login prompt will be presented again for you.
 
-You are ready to go.
+**Note:** Please observe that network manager has already configured your eth0 interface, see the sample output above.
 
-**Note:** Please observe that network manager has already configured your eth0 interface, see the screen snipet above.
+You are ready to go, skip to step 3.
 
-### Step 2b: for Raspbian, Start it and change pi password
+### Step 2.2: Only for Raspbian, Start it and change pi password
 
-Log into the system, the default user is this:
+Log into the system, the default user credentials are this:
 
 ```
 user: pi
 passwd: raspbian
 ```
 
-Once there change the password of uer pi, just type in the console:
+Once there change the password of user pi, just type in the console:
 
 ```
 sudo passwd pi
-Enter new UNIX password: 
-Retype new UNIX password: 
+Enter new UNIX password:
+Retype new UNIX password:
 passwd: password updated successfully
 ```
 
@@ -111,7 +115,7 @@ passwd: password updated successfully
 
 ## Step 3: Get needed files
 
-We will start tinkering with the network now and in the process we may lose connectivity so we will get all the files prior to that, do this on the console:
+We will start tinkering with the network now, in the process we may lose connectivity so we will get all needed files prior to that, do this on the console:
 
 ```
 cd /root
@@ -133,7 +137,7 @@ apt install hostapd bridge-utils -y
 
 **This is a armbian only step, if you are using Raspbian, skip to step 5**
 
-By default al interfaces in armbian are handled by NetworkManager, but for the simple bridge to work we don't need it, so we will disable it & remove it from the system. Just type this commands on the console as root:
+By default all interfaces in armbian are handled by NetworkManager, but for the simple bridge we don't need it, so we will disable it & remove it from the system. Just type this commands on the console as root:
 
 ```
 systemctl stop network-manager
@@ -159,7 +163,7 @@ If you use the default WiFi on the Orange Pi Prime (Or other with onboard WiFi) 
 ifconfig -a
 ```
 
-You will get something like this: 
+You will get something like this:
 
 ```
 eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
@@ -236,13 +240,19 @@ In there you need to change just three lines, the ones to refers to:
 * Wireless SSID `ssid=OPP-hotspot`
 * Wireless Password `wpa_passphrase=123password`
 
-The interface option refers to the device you identified, if it's a SBC with onboard WiFi like the Orange Pi Prime you are set.
+The interface option refers to the device you identified, if it's a SBC with onboard WiFi like the Orange Pi Prime you are set, in other cases you need to check it against the detected wlan interfaces (see step 5)
 
 The SSID is the name of the wireless network, in this case "OOP-hotspot" and "123passwd" is the password as you may guessed at this time, change at your will.
 
+**Warning:** You need to get sure that there is no spaces around the equal sign or it will no work.
+
 ### Bonus
 
-If yo care of RF spectrum and good link, you can move the WiFi channel usage to a clear one by setting the [channel=6] option to the chosen one.
+If you care of RF spectrum usage and good links, you can move the WiFi channel by changing the [channel=6] option to a clear one.
+
+Some curious ones may spot also the option of the WiFi network type `hw_mode=g` if your device support other modes you can play with that, for example the 5GHz WiFi (802.11a) you can switch the hw_mode to it `hw_mode=a` to change to 5GHz, or force mode 802.11b for old devices `hw_mode=b`.
+
+Some types of network may need tweaks on other options to make it work, take a peek on hostapd tutorials online to know what you need.
 
 ## You are set!
 
